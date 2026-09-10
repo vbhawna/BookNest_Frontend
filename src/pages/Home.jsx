@@ -2,6 +2,7 @@ import GenreCard from '../components/GenreCard';
 import PromotionBanners from '../components/PromotionBanners';
 import BookCard from '../components/BookCard';
 import { useBookContext } from '../contexts/BookContext';
+import { Link } from 'react-router-dom';
 
 function GenreCards() {
   const { genreData, genreLoading, genreError } = useBookContext();
@@ -17,12 +18,12 @@ function GenreCards() {
               .map((g, index) => <GenreCard genre={g} index={index} />)
           : genreLoading && <p>Loading...</p>}
       </div>
-      <button>View All</button>
+      <Link to='/books'>View More</Link>
     </div>
   );
 }
 
-function BookSection({ title, filteredBooks }) {
+function BookSection({ title, filteredBooks, viewMoreUrl }) {
   return (
     <div className="container-fluid mt-4">
       <div className="text-center mb-4">
@@ -36,7 +37,7 @@ function BookSection({ title, filteredBooks }) {
           </div>
         ))}
       </div>
-      <button>View All</button>
+      <Link to={viewMoreUrl}>View All</Link>
     </div>
   );
 }
@@ -45,7 +46,7 @@ function FeaturedBookSection() {
   const { booksData, booksLoading, booksError } = useBookContext();
 
   console.log(booksData);
-  const topRatedBooks = booksData.filter((book) => book.rating >= 4.5);
+  const topRatedBooks = booksData.filter((book) => book.rating >= 4.0);
   console.log(topRatedBooks);
 
   const newArrivalBooks = booksData.filter(
@@ -63,15 +64,16 @@ function FeaturedBookSection() {
   return (
     <div>
       <div>
-        <BookSection title="Top Rated" filteredBooks={topRatedBooks} />
+        <BookSection title="Top Rated" filteredBooks={topRatedBooks} viewMoreUrl='/books?rating=4.0stars_plus' />
       </div>
       <div>
-        <BookSection title="New Arrival" filteredBooks={newArrivalBooks} />
+        <BookSection title="New Arrival" filteredBooks={newArrivalBooks} viewMoreUrl='/books?sort=newArrival' />
       </div>
       <div>
         <BookSection
           title="Today's Deals"
           filteredBooks={mostDiscountedBooks}
+          viewMoreUrl='/books?sort=deals' 
         />
       </div>
     </div>
