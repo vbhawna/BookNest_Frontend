@@ -258,8 +258,8 @@ const RatingFilter = () => {
           <input type='radio' 
           name='rating' 
           checked={ratingParam === `${rating}stars_plus`} 
-          id={rating} onChange={(event) => 
-          handleRatingChange(rating, event.target.checked)} 
+          id={rating} 
+          onChange={(event) => handleRatingChange(rating, event.target.checked)} 
           /> {' '}
           <label htmlFor={rating}>{rating} Stars & above</label>
         </div>

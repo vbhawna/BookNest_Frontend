@@ -45,6 +45,8 @@ function BookSection({ title, filteredBooks, viewMoreUrl }) {
 function FeaturedBookSection() {
   const { booksData, booksLoading, booksError } = useBookContext();
 
+  
+
   console.log(booksData);
   const topRatedBooks = booksData.filter((book) => book.rating >= 4.0);
   console.log(topRatedBooks);
@@ -64,10 +66,14 @@ function FeaturedBookSection() {
   return (
     <div>
       <div>
-        <BookSection title="Top Rated" filteredBooks={topRatedBooks} viewMoreUrl='/books?rating=4.0stars_plus' />
+        <BookSection title="Top Rated" 
+        filteredBooks={topRatedBooks} 
+        viewMoreUrl='/books?rating=4stars_plus' />
       </div>
       <div>
-        <BookSection title="New Arrival" filteredBooks={newArrivalBooks} viewMoreUrl='/books?sort=newArrival' />
+        <BookSection title="New Arrival" 
+        filteredBooks={newArrivalBooks} 
+        viewMoreUrl='/books?sort=newArrival' />
       </div>
       <div>
         <BookSection
