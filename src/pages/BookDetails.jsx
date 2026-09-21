@@ -43,7 +43,7 @@ export default function BookDetails() {
 
                                 <div className="d-flex justify-content-between align-items-center gap-3">
                                     <h2 className="fs-3 fw-bold lh-sm mb-2">{data.title}</h2>
-                                    <button type="button" className="btn btn-light border rounded-circle fs-3 px-3 py-2" aria-label="Add book to wishlist">♡</button>
+                                    <button type="button" className="btn btn-light border rounded-circle fs-3 px-3 py-2" aria-label="Add book to wishlist">🤍</button>
                                 </div>
 
                                 <p className="text-secondary fs-6 mb-3">by {data.authors?.join(', ')}</p>

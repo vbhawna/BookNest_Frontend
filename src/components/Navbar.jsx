@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 export default function Navbar() {
   return (
-    <nav className="navbar navbar-expand-lg bg-warning-subtle">
+    <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#f8e6b0" }}>
       <div className="container-fluid">
         <NavLink to="/" className="navbar-brand">
           BookNest

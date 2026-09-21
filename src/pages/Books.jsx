@@ -331,6 +331,22 @@ export default function Books() {
   const selectedBindings = bindingParams ? bindingParams.split('_') : [];
   const selectedRating = ratingParams ? Number(ratingParams.slice(0, 1)) : '';
 
+  if (booksLoading) {
+    return (
+      <p className="text-success fw-bold text-center">
+        Loading Books...
+      </p>
+    );
+  }
+
+  if (booksError) {
+    return (
+        <p className="text-danger fw-bold text-center">
+            Unable to load books.
+        </p>
+    );
+}
+
   const filteredBooks = booksData.filter((book) => {
     const matchGenres = selectedGenres.length === 0 || 
     selectedGenres.some((genre) => book.genres.includes(genre));
@@ -372,7 +388,7 @@ export default function Books() {
         return aSP - bSP;
       });
       return sortedBooks;
-    } else if(sortBy == 'date-old-new') {
+    } else if(sortBy === 'date-old-new') {
       const sortedBooks = [...filteredBooks].sort((a, b) => {
         const aDate = new Date(a.publishedDate);
         const bDate = new Date(b.publishedDate);
@@ -381,7 +397,7 @@ export default function Books() {
       });
 
       return sortedBooks;
-    } else if(sortBy == 'date-new-old') {
+    } else if(sortBy === 'date-new-old') {
       const sortedBooks = [...filteredBooks].sort((a, b) => {
         const aDate = new Date(a.publishedDate);
         const bDate = new Date(b.publishedDate);
@@ -391,7 +407,7 @@ export default function Books() {
 
       return sortedBooks;
     }
-    else if(sortBy == 'newArrival') {
+    else if(sortBy === 'newArrival') {
         const newArrivalBooks = filteredBooks.filter((book) => new Date(book.publishedDate).getFullYear() > 2016)
         const sortedBooks = [...newArrivalBooks].sort((a, b) => {
         const aDate = new Date(a.publishedDate);
@@ -402,7 +418,7 @@ export default function Books() {
 
       return sortedBooks;
     }
-    else if(sortBy == 'deals') {
+    else if(sortBy === 'deals') {
         const DiscountedBooks = filteredBooks.filter((book) => book.discountPercentage >= 25)
         const sortedBooks = [...DiscountedBooks].sort((a, b) => b.discountPercentage - a.discountPercentage);
 
@@ -427,7 +443,7 @@ export default function Books() {
   return (
     <div className="bg-warning-subtle">
       <div className="container-fluid">
-        <div className="text-center bg-warning text-light py-3">{selectedGenres.length === 0 ? <h1>All Books</h1> : <h1>{selectedGenres.join(', ')}</h1>}</div>
+        <div className="text-center text-light py-3 rounded-bottom" style={{ backgroundColor: "#d4a3ba" }}>{selectedGenres.length === 0 ? <h1>All Books</h1> : <h1>{selectedGenres.join(', ')}</h1>}</div>
 
         <div className='py-3 text-center'>
           <select className='form-control' onChange={handleSortChange} value={sortBy}>

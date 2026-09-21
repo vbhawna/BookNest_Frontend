@@ -9,14 +9,30 @@ function GenreCards() {
 
   // console.log(genreData);
   // console.log(genreLoading);
+
+  if (genreLoading) {
+    return (
+      <p className='text-warning fw-bold text-center'>
+        Loading genres...
+      </p>
+    );
+}
+
+if (genreError) {
+    return (
+      <p className='text-danger fw-bold text-center'>
+        Unable to load genres.
+      </p>
+    );
+}
+
   return (
     <div className="py-3">
       <div className="row">
         {genreData
-          ? genreData
               .slice(0, 4)
-              .map((g, index) => <GenreCard genre={g} index={index} />)
-          : genreLoading && <p>Loading...</p>}
+              .map((g) => <GenreCard genre={g} />)
+          }
       </div>
       <Link to='/books'>View More</Link>
     </div>
@@ -45,23 +61,37 @@ function BookSection({ title, filteredBooks, viewMoreUrl }) {
 function FeaturedBookSection() {
   const { booksData, booksLoading, booksError } = useBookContext();
 
-  
+  if (booksLoading) {
+    return (
+      <p className="text-success fw-bold text-center">
+        Loading Books...
+      </p>
+    );
+  }
 
-  console.log(booksData);
+  if (booksError) {
+    return (
+        <p className="text-danger fw-bold text-center">
+            Unable to load books.
+        </p>
+    );
+}
+
+  // console.log(booksData);
   const topRatedBooks = booksData.filter((book) => book.rating >= 4.0);
-  console.log(topRatedBooks);
+  // console.log(topRatedBooks);
 
   const newArrivalBooks = booksData.filter(
     (book) => new Date(book.publishedDate).getFullYear() > 2016
   );
 
-  console.log(newArrivalBooks);
+  // console.log(newArrivalBooks);
 
-  const mostDiscountedBooks = booksData
+  const mostDiscountedBooks = [...booksData]
     .filter((book) => book.discountPercentage >= 25)
     .sort((a, b) => b.discountPercentage - a.discountPercentage);
 
-  console.log(mostDiscountedBooks);
+  // console.log(mostDiscountedBooks);
 
   return (
     <div>

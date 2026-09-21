@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
-export default function GenreCard({ genre, index }) {
+export default function GenreCard({ genre }) {
   return (
-    <div key={index} className="col-md-3">
+    <div key={genre} className="col-md-3">
       <div className="card">
         <Link to={`/books?genre=${genre}`}>
           <div className="card-body">
