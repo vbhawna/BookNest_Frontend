@@ -1,12 +1,24 @@
 import { Link } from 'react-router-dom';
 import StarRating from './StarRating';
+import { useWishlistContext } from '../contexts/WishlistContext';
+import WishlistButton from './WishlistButton';
 
 
 export default function BookCard({ book }) {
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
+
+  const userId = "6ab11de1bb78294b172bd040";
+
+  
+
   const discountPrice =
     Math.round(book.originalPrice - (book.originalPrice * book.discountPercentage) / 100);
   return (
       <div className="card border-0 shadow-sm h-100 position-relative book-card">
+        <div className='position-absolute top-0 end-0'>
+          <WishlistButton book={book} addToWishlist={addToWishlist} removeFromWishlist={removeFromWishlist} isInWishlist={isInWishlist} />
+        </div>
+
         <Link className='link-underline-light' to={`/books/${book._id}`}>
           <div className="discount-ribbon">
             <strong>{book.discountPercentage}%</strong>

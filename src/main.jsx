@@ -6,12 +6,15 @@ import App from './App.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import BookProvider from './contexts/BookContext';
+import { WishlistProvider } from './contexts/WishlistContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <BookProvider>
-        <App />
+        <WishlistProvider>
+          <App />
+        </WishlistProvider>
       </BookProvider>
     </BrowserRouter>
   </StrictMode>

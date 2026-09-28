@@ -2,15 +2,19 @@ import { useParams } from "react-router-dom";
 import useFetch from "../useFetch";
 import StarRating from '../components/StarRating';
 import { useState } from "react";
+import { useWishlistContext } from "../contexts/WishlistContext";
+import WishlistButton from '../components/WishlistButton';
 
 export default function BookDetails() {
     const [showAll, setShowAll] = useState(false);
 
     const { bookId } = useParams();
+
+    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
     
     const { data, loading, error } = useFetch(`https://book-nest-project1.vercel.app/books/${bookId}`);
 
-    console.log(data);
+    // console.log(data);
 
     if (loading) {
         return <p className="text-center mt-5">Loading...</p>;
@@ -43,7 +47,7 @@ export default function BookDetails() {
 
                                 <div className="d-flex justify-content-between align-items-center gap-3">
                                     <h2 className="fs-3 fw-bold lh-sm mb-2">{data.title}</h2>
-                                    <button type="button" className="btn btn-light border rounded-circle fs-3 px-3 py-2" aria-label="Add book to wishlist">🤍</button>
+                                    <WishlistButton book={data} addToWishlist={addToWishlist} removeFromWishlist={removeFromWishlist} isInWishlist={isInWishlist} />
                                 </div>
 
                                 <p className="text-secondary fs-6 mb-3">by {data.authors?.join(', ')}</p>

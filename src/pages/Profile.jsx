@@ -104,7 +104,7 @@ function AddressForm({mode, initialFormData, operationOnAddress, onCloseForm}) {
   }
 
   return (
-    <div className="card bordder mt-4">
+    <div className="card border mt-4">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h4 className="mb-0">{mode === "Add" ? "Add New Address" : "Edit Address"}</h4>
@@ -415,7 +415,9 @@ export default function Profile() {
   const [activeSection, setActiveSection] = useState('profile')
   const [addresses, setAddresses] = useState([]);
 
-  const { data, loading, error } = useFetch(`https://book-nest-project1.vercel.app/addresses`);
+  const userId = "6ab11de1bb78294b172bd040";
+
+  const { data, loading, error } = useFetch(`https://book-nest-project1.vercel.app/addresses?userId=${userId}`);
 
   console.log(data);
 
@@ -430,7 +432,7 @@ export default function Profile() {
     }
 
     if (error) {
-        return <p className="text-center text-danger mt-5">Something went wrong while fetching the book.</p>;
+        return <p className="text-center text-danger mt-5">Something went wrong while fetching the address.</p>;
     }
 
     if (!data) {
@@ -458,7 +460,7 @@ export default function Profile() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(newAddress),
+          body: JSON.stringify({ userId, ...newAddress }),
         }
       );
 
@@ -483,7 +485,7 @@ export default function Profile() {
   const handleDeleteAddress = async (id) => {
     try {
       const response = await fetch(
-        `https://book-nest-project1.vercel.app/addresses/${id}`,
+        `https://book-nest-project1.vercel.app/addresses/${id}?userId=${userId}`,
         {
           method: "DELETE",
         },
@@ -509,7 +511,7 @@ export default function Profile() {
   const handleEditAddress = async (id, changesInAddress) => {
     try {
       const response = await fetch(
-        `https://book-nest-project1.vercel.app/addresses/${id}`,
+        `https://book-nest-project1.vercel.app/addresses/${id}?userId=${userId}`,
         {
           method: "PUT", 
           headers: {
