@@ -7,7 +7,7 @@ export default function Wishlist() {
 
   if (wishlistLoading) {
     return (
-      <div className="container text-center py-5">
+      <div className="container min-vh-100 text-center py-5">
         <div className="spinner-border text-secondary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -18,7 +18,7 @@ export default function Wishlist() {
 
   if (wishlistError) {
     return (
-      <div className="container text-center py-5">
+      <div className="container min-vh-100 text-center py-5">
         <p className="text-danger">
           Something went wrong while loading your wishlist.
         </p>

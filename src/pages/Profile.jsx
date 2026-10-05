@@ -428,11 +428,11 @@ export default function Profile() {
   }, [data]);
 
   if (loading) {
-        return <p className="text-center mt-5">Loading...</p>;
+        return <p className="text-center min-vh-100 mt-5">Loading...</p>;
     }
 
     if (error) {
-        return <p className="text-center text-danger mt-5">Something went wrong while fetching the address.</p>;
+        return <p className="text-center text-danger min-vh-100 mt-5">Something went wrong while fetching the address.</p>;
     }
 
     if (!data) {
@@ -541,7 +541,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid min-vh-100">
       <div className="row py-4">
         <div className="col-md-3">
           <div className="card shadow-sm border-0">

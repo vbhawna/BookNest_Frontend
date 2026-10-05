@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import StarRating from './StarRating';
 import { useWishlistContext } from '../contexts/WishlistContext';
 import WishlistButton from './WishlistButton';
+import { useCartContext } from '../contexts/CartContext';
 
 
 export default function BookCard({ book }) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
+  const { isInCart, addToCart } = useCartContext();
 
   const userId = "6ab11de1bb78294b172bd040";
 
@@ -44,12 +46,21 @@ export default function BookCard({ book }) {
           </div>
         </Link>
         <div className="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
-          <Link
-            to="#"
-            className="text-decoration-none text-warning fw-semibold"
-          >
-            Add to Cart
-          </Link>
+          {isInCart(book._id) ? (
+            <Link
+              to="/cart"
+              className="btn text-warning fw-semibold"
+            >
+                Go to Cart
+            </Link>
+            ) : (
+              <button
+                className="btn text-warning fw-semibold"
+                onClick={() => addToCart(book._id)}
+              >
+                Add to Cart
+              </button>
+            )}
           <StarRating rating={book.rating} />
         </div>
       </div>

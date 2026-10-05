@@ -1,16 +1,21 @@
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import useFetch from "../useFetch";
 import StarRating from '../components/StarRating';
 import { useState } from "react";
 import { useWishlistContext } from "../contexts/WishlistContext";
 import WishlistButton from '../components/WishlistButton';
+import { useCartContext } from "../contexts/CartContext";
+import QuantityChanger from "../components/QuantityChanger";
 
 export default function BookDetails() {
     const [showAll, setShowAll] = useState(false);
 
     const { bookId } = useParams();
+    const navigate = useNavigate();
 
     const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
+
+    const { cart, isInCart, addToCart } = useCartContext();
     
     const { data, loading, error } = useFetch(`https://book-nest-project1.vercel.app/books/${bookId}`);
 
@@ -32,6 +37,20 @@ export default function BookDetails() {
     Math.round(data.originalPrice - (data.originalPrice * data.discountPercentage) / 100);
 
     const bookSummary = showAll ? data.description : data.description.slice(0, 135);
+
+    const handleBuyNow = async () => {
+        const success = await addToCart(data._id);
+
+        if(success) {
+            navigate("/cart");
+        }
+    };
+
+
+    const item = cart.items.find((item) => item.book._id === data._id);
+
+    // console.log(item);
+
 
     return (
         <div className="py-4">
@@ -75,13 +94,40 @@ export default function BookDetails() {
                                     {data.stockQuantity > 0 ? <p className="fw-semibold fs-6 text-success">● In Stock</p> : <p className="fw-semibold fs-6 text-danger">● Out of Stock</p>}
                                 </div>
 
+                                {isInCart(data._id) && (
+                                    <div className="mt-3 mb-4">
+                                        <QuantityChanger item={item} />
+                                    </div>
+                                )}
+
                                 <div className="d-flex flex-wrap gap-4 mb-5">
-                                    {data.stockQuantity > 0 ? (
-                                        <>
-                                            <button type='button' className="btn btn-outline-warning py-3 px-4 fw-semibold rounded-2" style={{ minWidth: "230px"}}>Add to Cart</button>
-                                            <button type='button' className="btn btn-outline-warning py-3 px-4 fw-semibold rounded-2" style={{ minWidth: "230px"}}>Buy Now</button>
-                                        </>
-                                    ) : <button type='button' className="btn btn-outline-secondary py-3 px-4 fw-semibold rounded-2" style={{ minWidth: "230px"}}>Notify Me</button>}
+                                    {data.stockQuantity > 0 ? (isInCart(data._id) ? (
+                                                <Link
+                                                    to="/cart"
+                                                    className="btn btn-outline-warning py-3 px-4 fw-semibold rounded-2"
+                                                >
+                                                    Go to Cart
+                                                </Link>
+                                            ) : (
+                                            <>
+                                                <button 
+                                                    type='button' 
+                                                    className="btn btn-outline-warning py-3 px-4 fw-semibold rounded-2" 
+                                                    style={{ minWidth: "230px"}}
+                                                    onClick={() => addToCart(data._id)}
+                                                >
+                                                    Add to Cart
+                                                </button>
+                                                <button 
+                                                    className="btn btn-outline-warning py-3 px-4 fw-semibold rounded-2" 
+                                                    style={{ minWidth: "230px"}}
+                                                    onClick={handleBuyNow}
+                                                >
+                                                    Buy Now
+                                                </button>
+                                            </>
+                                            ))
+                                     : <button type='button' className="btn btn-outline-secondary py-3 px-4 fw-semibold rounded-2" style={{ minWidth: "230px"}}>Notify Me</button>}
                                     
                                 </div>
 
