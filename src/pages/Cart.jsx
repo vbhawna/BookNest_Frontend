@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import { useCartContext } from "../contexts/CartContext";
 import QuantityChanger from "../components/QuantityChanger.jsx";
+import {
+  calculateDeliveryCharge, 
+  calculateDiscountAmount, 
+  calculateItemPrice, 
+  calculateTotalDiscount, 
+  calculateTotalItems, 
+  calculateTotalOriginalPrice, 
+  calculateTotalPrice} from '../utils/cartCalculations.js';
 
 export default function Cart() {
   const {
@@ -64,27 +72,28 @@ export default function Cart() {
       );
   }
 
-const discountPrice = (originalPrice, discountPercentage, quantity) => quantity * Math.round(
-                        originalPrice - (originalPrice * discountPercentage) / 100
-                      );
+// const discountPrice = (originalPrice, discountPercentage, quantity) => quantity * Math.round(
+//                         originalPrice - (originalPrice * discountPercentage) / 100
+//                       );
 
-const discountAmount = (originalPrice, discountPercentage, quantity) => (quantity * originalPrice - discountPrice(originalPrice, discountPercentage, quantity));
 
-const totalOriginalPrice = cart.items.reduce((total, item) => {
-    return total + (item.book.originalPrice * item.quantity);
-}, 0);
+// const discountAmount = (originalPrice, discountPercentage, quantity) => (quantity * originalPrice - calculateDiscountAmount(originalPrice, discountPercentage, quantity));
 
-const totalDiscount = cart.items.reduce((total, item) => {
-    return total + (discountAmount(item.book.originalPrice, item.book.discountPercentage, item.quantity));
-}, 0);
+// const totalOriginalPrice = cart.items.reduce((total, item) => {
+//     return total + (item.book.originalPrice * item.quantity);
+// }, 0);
 
-const deliveryCharge = totalOriginalPrice >= 500 ? 0 : 50
+// const totalDiscount = cart.items.reduce((total, item) => {
+//     return total + (discountAmount(item.book.originalPrice, item.book.discountPercentage, item.quantity));
+// }, 0);
 
-const totalPrice = totalOriginalPrice - totalDiscount + deliveryCharge;
+// const deliveryCharge = totalOriginalPrice >= 500 ? 0 : 50
 
-const totalItems = cart.items.reduce((total, item) => {
-    return total + item.quantity;
-}, 0);
+// const totalPrice = totalOriginalPrice - totalDiscount + deliveryCharge;
+
+// const totalItems = cart.items.reduce((total, item) => {
+//     return total + item.quantity;
+// }, 0);
 
 
   return (
@@ -92,7 +101,7 @@ const totalItems = cart.items.reduce((total, item) => {
       <div className="bg-white py-4">
         <div className="border-bottom py-3 pt-0 text-center">
           <h4>My Cart</h4>
-          <p className="badge text-bg-warning">{totalItems} books</p>
+          <p className="badge text-bg-warning">{calculateTotalItems(cart.items)} books</p>
         </div>
         {cart.items.map((item) => (
           <div key={item.book._id} className="border-bottom">
@@ -133,18 +142,19 @@ const totalItems = cart.items.reduce((total, item) => {
 
                     <div>
                       <span className="fw-bold fs-5">
-                        ₹{discountPrice(item.book.originalPrice, item.book.discountPercentage, item.quantity)}
+                        ₹{calculateItemPrice(item.book.originalPrice, item.book.discountPercentage)}
+                        {/* ₹{discountPrice(item.book.originalPrice, item.book.discountPercentage, item.quantity)} */}
                       </span>
                     </div>
 
                     <div>
                       <span className="text-decoration-line-through text-muted small">
-                          ₹{item.quantity * item.book.originalPrice}
+                          ₹{item.book.originalPrice}
                       </span>
                     </div>
 
                     <span className="badge bg-success-subtle text-success mt-1">
-                            ₹{discountAmount(item.book.originalPrice, item.book.discountPercentage, item.quantity)} OFF
+                            ₹{calculateDiscountAmount(item.book.originalPrice, item.book.discountPercentage)} OFF
                     </span>
 
                 </div>
@@ -165,23 +175,23 @@ const totalItems = cart.items.reduce((total, item) => {
               </h5>
 
               <div className="d-flex justify-content-between mb-2">
-                  <span>Price ({totalItems} books)</span>
-                  <span>₹{totalOriginalPrice}</span>
+                  <span>Price ({calculateTotalItems(cart.items)} books)</span>
+                  <span>₹{calculateTotalOriginalPrice(cart.items)}</span>
               </div>
 
               <div className="d-flex justify-content-between mb-2">
                   <span>Discount</span>
                   <span className="text-success">
-                      -₹{totalDiscount}
+                      -₹{calculateTotalDiscount(cart.items)}
                   </span>
               </div>
 
               <div className="d-flex justify-content-between mb-3">
                   <span>Delivery Charge</span>
                   <span>
-                      {deliveryCharge === 0
+                      {calculateDeliveryCharge(cart.items) === 0
                           ? "FREE"
-                          : `₹${deliveryCharge}`}
+                          : `₹${calculateDeliveryCharge(cart.items)}`}
                   </span>
               </div>
 
@@ -189,14 +199,14 @@ const totalItems = cart.items.reduce((total, item) => {
 
               <div className="d-flex justify-content-between fw-bold fs-5">
                   <span>Total Amount</span>
-                  <span>₹{totalPrice}</span>
+                  <span>₹{calculateTotalPrice(cart.items)}</span>
               </div>
           </div>
         </div>
           </div>
         </div>
         <div className="py-4 mx-5 d-flex justify-content-end flex-wrap gap-4">
-          <button className="btn btn-outline-warning">Proceed to Checkout</button>
+          <Link to="/checkout" className="btn btn-outline-warning">Proceed to Checkout</Link>
           <Link to="/" className="btn btn-outline-warning">+ Add More Books</Link>
         </div>
       </div>

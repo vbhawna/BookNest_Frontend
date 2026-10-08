@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import useFetch from "../useFetch";
 
 const initialData = {
@@ -395,27 +395,323 @@ function UserProfileInfo({profileInfo, addresses, onAddAddress, deleteAddress, o
 }
 
 function OrderList() {
-  return (
-    <div className="card-body text-center">
-      <h2 className="mb-4">Order List</h2>
-      <div className="card bg-light border-0 mb-4">
-        <div className="card-body">
-          <p className="mb-1 small text-muted">You haven't placed any orders yet.</p>
-          <p className="mb-1 small text-muted">We can't wait to have you as a customer.</p>
-          <br />
-          <p className="mb-3 small text-muted">Take a look at our products here</p>
-          <Link to="/books" className="btn btn-outline-secondary">View Products</Link>
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+    const userId = "6ab11de1bb78294b172bd040";
+
+    const {
+        data: orderData,
+        loading: orderLoading,
+        error: orderError,
+    } = useFetch(
+        `https://book-nest-project1.vercel.app/orders?userId=${userId}`
+    );
+
+    console.log(orderData);
+
+    const handleToggleOrder = (orderId) => {
+        setExpandedOrderId((prevOrderId) =>
+            prevOrderId === orderId ? null : orderId
+        );
+    };
+
+    if (orderLoading) {
+        return (
+            <div className="container min-vh-100 text-center py-5">
+                <div className="spinner-border text-secondary" role="status">
+                    <span className="visually-hidden">
+                        Loading...
+                    </span>
+                </div>
+
+                <p className="text-muted mt-3">
+                    Loading your order list...
+                </p>
+            </div>
+        );
+    }
+
+    if (orderError) {
+        return (
+            <div className="container min-vh-100 text-center py-5">
+                <p className="text-danger">
+                    Something went wrong while loading your order list...
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="card-body text-center">
+
+            <h2 className="mb-4">
+                Order List
+            </h2>
+
+            {!orderData?.orders ||
+            orderData?.orders.length === 0 ? (
+
+                <div>
+                    <div className="card bg-light border-0 mb-4">
+                        <div className="card-body">
+
+                            <p className="mb-1 small text-muted">
+                                You haven't placed any orders yet.
+                            </p>
+
+                            <p className="mb-1 small text-muted">
+                                We can't wait to have you as a customer.
+                            </p>
+
+                            <br />
+
+                            <p className="mb-3 small text-muted">
+                                Take a look at our products here
+                            </p>
+
+                            <Link
+                                to="/books"
+                                className="btn btn-outline-secondary"
+                            >
+                                View Products
+                            </Link>
+
+                        </div>
+                    </div>
+                </div>
+
+            ) : (
+
+                <div className="text-start">
+
+                    {orderData.orders.map((order) => {
+
+                        const isExpanded =
+                            expandedOrderId === order._id;
+
+                        return (
+                            <div
+                                className="card border-warning-subtle shadow-sm mb-4"
+                                key={order._id}
+                            >
+
+                                {/* Order Header */}
+                                <div className="card-header bg-white border-bottom">
+
+                                    <div className="d-flex justify-content-between align-items-center">
+
+                                        <div>
+                                            <h5 className="mb-1">
+                                                Order #{order._id.slice(-8)}
+                                            </h5>
+
+                                            <small className="text-muted">
+                                                Ordered on{" "}
+                                                {new Date(order.createdAt).toLocaleDateString()}
+                                            </small>
+                                        </div>
+
+                                        <span className="badge text-bg-secondary">
+                                            {order.status}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* Always Visible Summary */}
+                                <div className="card-body">
+
+                                    <h6 className="fw-bold mb-3">
+                                        Items
+                                    </h6>
+
+                                    {order.items.map((item) => (
+
+                                        <div
+                                            key={item._id}
+                                            className="d-flex align-items-center border-bottom pb-3 mb-3"
+                                        >
+
+                                            <img
+                                                src={item.coverImage}
+                                                alt={item.title}
+                                                style={{
+                                                    width: "70px",
+                                                    height: "90px",
+                                                    objectFit: "cover"
+                                                }}
+                                                className="rounded me-3"
+                                            />
+
+                                            <div className="flex-grow-1">
+
+                                                <h6 className="mb-1">
+                                                    {item.title}
+                                                </h6>
+
+                                                <p className="mb-1 small text-muted">
+                                                    Quantity: {item.quantity}
+                                                </p>
+
+                                                <p className="mb-0 small">
+                                                    ₹{item.priceAtPurchase} ×{" "}
+                                                    {item.quantity}
+                                                </p>
+
+                                            </div>
+
+                                            <div className="fw-semibold">
+                                                ₹
+                                                {item.priceAtPurchase *
+                                                    item.quantity}
+                                            </div>
+
+                                        </div>
+
+                                    ))}
+
+
+                                    {/* Toggle Button */}
+                                    <div className="text-center">
+
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-dark btn-sm"
+                                            onClick={() => handleToggleOrder(order._id)}
+                                        >
+                                            {isExpanded
+                                                ? "Hide Details"
+                                                : "View More Details"}
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* Additional Details */}
+                                {isExpanded && (
+
+                                    <div className="card-body border-top">
+
+                                        {/* Price Details */}
+                                        <div>
+
+                                            <h6 className="fw-bold mb-3">
+                                                Price Details
+                                            </h6>
+
+                                            <div className="d-flex justify-content-between mb-2">
+                                                <span>Total MRP</span>
+                                                <span>
+                                                    ₹{order.totalMRP}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex justify-content-between mb-2">
+                                                <span>Discount</span>
+                                                <span className="text-success">
+                                                    - ₹{order.discount}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex justify-content-between mb-2">
+                                                <span>Selling Price</span>
+                                                <span>
+                                                    ₹{order.totalSP}
+                                                </span>
+                                            </div>
+
+                                            <div className="d-flex justify-content-between mb-2">
+                                                <span>Delivery Charge</span>
+                                                <span>
+                                                    {order.deliveryCharge === 0
+                                                        ? "FREE"
+                                                        : `₹${order.deliveryCharge}`}
+                                                </span>
+                                            </div>
+
+                                            <hr />
+
+                                            <div className="d-flex justify-content-between fw-bold">
+                                                <span>
+                                                    Total Amount
+                                                </span>
+
+                                                <span>
+                                                    ₹{order.totalAmount}
+                                                </span>
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* Address */}
+                                        <div className="mt-4">
+
+                                            <h6 className="fw-bold mb-2">
+                                                Delivery Address
+                                            </h6>
+
+                                            <div className="bg-light rounded p-3">
+
+                                                <p className="mb-1 fw-semibold">
+                                                    {order.shippingAddress.fullName}
+                                                </p>
+
+                                                <p className="mb-1 small text-muted">
+                                                    {order.shippingAddress.houseNumber},{" "}
+                                                    {order.shippingAddress.street}
+                                                </p>
+
+                                                <p className="mb-1 small text-muted">
+                                                    {order.shippingAddress.city},{" "}
+                                                    {order.shippingAddress.state}
+                                                </p>
+
+                                                <p className="mb-1 small text-muted">
+                                                    {order.shippingAddress.country} -{" "}
+                                                    {order.shippingAddress.pincode}
+                                                </p>
+
+                                                <p className="mb-0 small text-muted">
+                                                    Phone:{" "}
+                                                    {order.shippingAddress.phoneNumber}
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+                        );
+                    })}
+
+                </div>
+            )}
+
         </div>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default function Profile() {
-  const [activeSection, setActiveSection] = useState('profile')
+  const [activeSection, setActiveSection] = useState('profile');
+  const [searchParams] = useSearchParams();
   const [addresses, setAddresses] = useState([]);
 
   const userId = "6ab11de1bb78294b172bd040";
+
+  useEffect(() => {
+    if(searchParams.get("section") === "orders") {
+      setActiveSection("orders");
+    }
+  }, [searchParams])
 
   const { data, loading, error } = useFetch(`https://book-nest-project1.vercel.app/addresses?userId=${userId}`);
 
