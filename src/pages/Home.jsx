@@ -4,6 +4,7 @@ import BookCard from '../components/BookCard';
 import { useBookContext } from '../contexts/BookContext';
 import { Link } from 'react-router-dom';
 
+
 function GenreCards() {
   const { genreData, genreLoading, genreError } = useBookContext();
 
@@ -12,29 +13,54 @@ function GenreCards() {
 
   if (genreLoading) {
     return (
-      <p className='text-warning fw-bold text-center'>
-        Loading genres...
-      </p>
+      <div
+        className="d-flex justify-content-center align-items-center gap-2 py-4"
+        role="status"
+      >
+        <span
+          className="spinner-border spinner-border-sm text-warning"
+          aria-hidden="true"
+        ></span>
+        <span>Loading genres...</span>
+      </div>
     );
 }
 
 if (genreError) {
     return (
-      <p className='text-danger fw-bold text-center'>
-        Unable to load genres.
-      </p>
+      <div className="alert alert-danger text-center" role="alert">
+        Unable to load genres. Please try again later.
+      </div>
     );
+}
+
+if (!Array.isArray(genreData) || genreData.length === 0) {
+  return (
+    <p className="text-muted text-center py-4">
+      No genres are available right now.
+    </p>
+  );
 }
 
   return (
     <div className="py-3">
       <div className="row">
         {genreData
-              .slice(0, 4)
-              .map((g) => <GenreCard genre={g} />)
+              .slice(0, 6)
+              .map((g) => <GenreCard key={g} genre={g} />)
           }
       </div>
-      <Link to='/books'>View More</Link>
+      
+      <div className="text-center mt-3 mb-2">
+        <Link
+          to="/books"
+          className="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold"
+        >
+          View All Genres
+          <span className="ms-2" aria-hidden="true">→</span>
+        </Link>
+      </div>
+
     </div>
   );
 }

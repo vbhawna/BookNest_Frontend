@@ -1,13 +1,48 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(
+    searchParams.get("search") || ""
+  );
+
+  useEffect(() => {
+    setSearchTerm(searchParams.get("search") || "");
+  }, [searchParams]);
+
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+
+    const updatedParams = new URLSearchParams(searchParams);
+
+    if (value.trim()) {
+      updatedParams.set("search", value.trim());
+    } else {
+      updatedParams.delete("search");
+    }
+
+    const queryString = updatedParams.toString();
+
+    navigate(
+      {
+        pathname: "/books",
+        search: queryString ? `?${queryString}` : "",
+      },
+      { replace: true }
+    );
+  };
+
   return (
     <nav className="navbar navbar-expand-lg" style={{ backgroundColor: "#f8e6b0" }}>
       <div className="container-fluid">
+
         <NavLink to="/" className="navbar-brand">
           BookNest
         </NavLink>
+
         <button
           className="navbar-toggler"
           type="button"
@@ -27,37 +62,46 @@ export default function Navbar() {
                 Home
               </NavLink>
             </li>
+
             <li className="nav-item">
               <NavLink to="/books" className="nav-link">
                 Books
               </NavLink>
             </li>
           </ul>
-          <form className="d-flex" role="search">
+
+          <div className="d-flex my-2 my-lg-0 me-lg-3">
             <input
-              className="form-control me-2"
+              className="form-control"
               type="search"
-              placeholder="Search"
-              aria-label="Search"
+              placeholder="Search books or authors..."
+              aria-label="Search books or authors..."
+              value={searchTerm}
+              onChange={handleSearchChange}
             />
-          </form>
+          </div>
+
           <ul className="navbar-nav">
             <li className="nav-item">
               <NavLink to="/profile" className="nav-link">
                 Profile
               </NavLink>
             </li>
+
             <li className="nav-item">
               <NavLink to="/wishlist" className="nav-link">
                 Wishlist
               </NavLink>
             </li>
+
             <li className="nav-item">
               <NavLink to="/cart" className="nav-link">
                 Cart
               </NavLink>
             </li>
+
           </ul>
+          
         </div>
       </div>
     </nav>

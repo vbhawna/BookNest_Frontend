@@ -56,144 +56,139 @@ const GenreFilter = ({genres}) => {
 
 const PriceFilter = () => {
   const { booksData, booksLoading } = useBookContext();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [ searchParams, setSearchParams ] = useSearchParams();
+  if (booksLoading || !booksData) {
+    return <p>Loading...</p>;
+  }
 
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(0);
-
-  const genreParams = searchParams.get('genre');
-  const bindingParams = searchParams.get('binding');
-
-  const selectedGenres = genreParams ? genreParams.split('_') : [];
-  const selectedBindings = bindingParams ? bindingParams.split('_') : [];
-
-  const booksForPriceFilter = booksData.filter((book) => {
-    const genreMatches = (selectedGenres.length === 0 || 
-      selectedGenres.some((genre) => book.genres.includes(genre)));
-
-    const bindingMatches = (selectedBindings.length === 0 || 
-      selectedBindings.some((binding) => book.format === binding));
-
-    return (genreMatches && bindingMatches); 
+  // Get prices of all books
+  const sellingPrices = booksData.map((book) => {
+    return Math.round(
+      book.originalPrice -
+      (book.originalPrice * book.discountPercentage) / 100
+    );
   });
 
-  const sellingPrices = booksForPriceFilter.map((book) => {
-    return Math.round(book.originalPrice - (book.originalPrice * book.discountPercentage) / 100);
-  });
+  // Find maximum selling price
+  const maximumPrice = Math.max(...sellingPrices);
 
-  console.log(sellingPrices);
+  // Read price from URL
+  const priceParam = searchParams.get("price");
 
-  const maximumPrice = sellingPrices.length > 0 ? Math.max(...sellingPrices) : 0;
+  let minPrice = 0;
+  let maxPrice = maximumPrice;
 
-  console.log(maximumPrice);
+  // If price exists in URL, use it
+  if (priceParam) {
+    const [urlMin, urlMax] = priceParam.split("-").map(Number);
 
-  useEffect(() => {
-    if(maximumPrice === 0) {
-      setMinPrice(0);
-      setMaxPrice(0);
-      return;
+    if (
+      Number.isFinite(urlMin) &&
+      Number.isFinite(urlMax) &&
+      urlMin >= 0 &&
+      urlMax <= maximumPrice &&
+      urlMin <= urlMax
+    ) {
+      minPrice = urlMin;
+      maxPrice = urlMax;
     }
-
-    const currentPrice = searchParams.get('price');
-
-    if(currentPrice) {
-      const [urlMin, urlMax] = currentPrice.split('-').map(Number);
-
-      const validUrlPrice = Number.isFinite(urlMin) && Number.isFinite(urlMax) && urlMin >=0 && urlMin <= urlMax && urlMax <= maximumPrice;
-
-      if(validUrlPrice) {
-        setMinPrice(urlMin);
-        setMaxPrice(urlMax);
-        return;
-      }
-    }
-    setMinPrice(0)
-    setMaxPrice(maximumPrice);
-    
-    const updatedParams = new URLSearchParams(searchParams);
-
-    updatedParams.set('price', `0-${maximumPrice}`);
-
-    setSearchParams(updatedParams)
-  }, [maximumPrice]);
+  }
 
   const handleMinPrice = (event) => {
     const newMinPrice = Number(event.target.value);
 
-    if(newMinPrice < 0 || newMinPrice > maximumPrice) {
+    if (newMinPrice > maxPrice) {
       return;
     }
 
-    if(newMinPrice <= maxPrice) {
-      setMinPrice(newMinPrice);
+    const updatedParams = new URLSearchParams(searchParams);
 
-      const updatedParams = new URLSearchParams(searchParams);
+    updatedParams.set(
+      "price",
+      `${newMinPrice}-${maxPrice}`
+    );
 
-      updatedParams.set("price", `${newMinPrice}-${maxPrice}`);
-
-      setSearchParams(updatedParams);
-    }
-
+    setSearchParams(updatedParams);
   };
 
   const handleMaxPrice = (event) => {
     const newMaxPrice = Number(event.target.value);
 
-    if(newMaxPrice < 0 || newMaxPrice > maximumPrice) {
-      return; 
+    if (newMaxPrice < minPrice) {
+      return;
     }
 
-    if(newMaxPrice >= minPrice) {
-      setMaxPrice(newMaxPrice);
+    const updatedParams = new URLSearchParams(searchParams);
 
-      const updatedParams = new URLSearchParams(searchParams);
+    updatedParams.set(
+      "price",
+      `${minPrice}-${newMaxPrice}`
+    );
 
-      updatedParams.set("price", `${minPrice}-${newMaxPrice}`);
-
-      setSearchParams(updatedParams);
-     }
+    setSearchParams(updatedParams);
   };
 
-
-  if(booksLoading) {
-    return <p>Loading...</p>
-  } 
-  
-  if(booksData.length === 0) {
-    return <p>No Books found</p>
-  }
-
-  if(booksForPriceFilter.length === 0) {
-    return (
-      <p>No books available for the selected filters.</p>
-    );
-  }
-
-  const minPosition = minPrice / maximumPrice * 100;
-  const maxPosition = maxPrice / maximumPrice * 100;
-  
   return (
     <div>
-      <div>
-        <div className='price-slider'>
-          <div className="price-slider-track"></div>
+      <div className="price-slider">
 
-          <div className='price-slider-range' style={{left: `${minPosition}%`, width: `${maxPosition - minPosition}%`, }} ></div>
+        <div className="price-slider-track"></div>
 
-          <input type='range' min='0' max={maximumPrice} value={minPrice} onChange={handleMinPrice} />{' '}
+        <div
+          className="price-slider-range"
+          style={{
+            left: `${(minPrice / maximumPrice) * 100}%`,
+            width: `${((maxPrice - minPrice) / maximumPrice) * 100}%`,
+          }}
+        ></div>
 
-          <input type='range' min='0' max={maximumPrice} value={maxPrice} onChange={handleMaxPrice} />   
-        </div>
-        <br />
-        <div className='d-flex align-items-center gap-2'>
-          <input type='number' min='0' max={maxPrice} value={minPrice} onChange={handleMinPrice} className='form-control'/>{' '}<span> - </span>
-          <input type='number' min={minPrice} max={maximumPrice} value={maxPrice} onChange={handleMaxPrice} className='form-control' />
-        </div>
+        <input
+          type="range"
+          min="0"
+          max={maximumPrice}
+          value={minPrice}
+          onChange={handleMinPrice}
+        />
+
+        <input
+          type="range"
+          min="0"
+          max={maximumPrice}
+          value={maxPrice}
+          onChange={handleMaxPrice}
+        />
       </div>
-     </div>
-  )
-}
+
+      <br />
+
+      <div className="d-flex align-items-center gap-2">
+
+        <input
+          type="number"
+          min="0"
+          max={maxPrice}
+          value={minPrice}
+          onChange={handleMinPrice}
+          className="form-control"
+        />
+
+        <span>-</span>
+
+        <input
+          type="number"
+          min={minPrice}
+          max={maximumPrice}
+          value={maxPrice}
+          onChange={handleMaxPrice}
+          className="form-control"
+        />
+
+      </div>
+
+    </div>
+  );
+};
 
   
   const BindingFilter = () => {
@@ -288,6 +283,8 @@ function FilterSideBar() {
     rating: false
   });
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const { genreData, genreLoading, genreError } = useBookContext();
 
   const toggleSection = (section) => {
@@ -297,8 +294,20 @@ function FilterSideBar() {
     }));
   }
 
+  const handleClearFilters = () => {
+    setSearchParams({});
+  }
+
   return (
     <>
+      <button
+        type="button"
+        className="btn btn-outline-danger btn-sm w-100 mb-3"
+        onClick={handleClearFilters}
+      >
+        Clear All Filters
+      </button>
+
       <FilterSection title="Genre" isOpen={openSection.genre} onToggle={() => toggleSection('genre')}>
         <GenreFilter genres={genreData} />
       </FilterSection>
@@ -326,10 +335,15 @@ export default function Books() {
   const genreParams = searchParams.get('genre');
   const bindingParams = searchParams.get('binding');
   const ratingParams = searchParams.get('rating');
+  const priceParams = searchParams.get('price');
+  const searchTermParams = searchParams.get("search") || '';
+
+  console.log(searchTermParams);
 
   const selectedGenres = genreParams ? genreParams.split('_') : [];
   const selectedBindings = bindingParams ? bindingParams.split('_') : [];
   const selectedRating = ratingParams ? Number(ratingParams.slice(0, 1)) : '';
+  const [minPrice, maxPrice] = priceParams ? priceParams.split("-").map(Number) : [0, Infinity];
 
   if (booksLoading) {
     return (
@@ -347,16 +361,50 @@ export default function Books() {
     );
 }
 
+const calculateSellingPrice = (book) => {
+  return Math.round(
+    book.originalPrice -
+    (book.originalPrice * book.discountPercentage) / 100
+  );
+};
+
   const filteredBooks = booksData.filter((book) => {
-    const matchGenres = selectedGenres.length === 0 || 
-    selectedGenres.some((genre) => book.genres.includes(genre));
 
-    const matchBindings = selectedBindings.length === 0 || 
-    selectedBindings.some((binding) => book.format.includes(binding));
+    const matchGenres =
+      selectedGenres.length === 0 ||
+      selectedGenres.some((genre) =>
+        book.genres.includes(genre)
+      );
 
-    const matchRatings = selectedRating === '' || book.rating >= selectedRating;
+    const matchBindings =
+      selectedBindings.length === 0 ||
+      selectedBindings.some((binding) =>
+        book.format.includes(binding)
+      );
 
-    return matchGenres && matchBindings && matchRatings;
+    const matchRatings =
+      selectedRating === '' ||
+      book.rating >= selectedRating;
+
+    const sellingPrice = calculateSellingPrice(book);
+
+    const matchPrice =
+      sellingPrice >= minPrice &&
+      sellingPrice <= maxPrice;
+
+    const matchSearch =
+      book.title.toLowerCase().includes(searchTermParams.toLowerCase()) ||
+      book.authors.some((author) =>
+        author.toLowerCase().includes(searchTermParams.toLowerCase())
+      );
+
+    return (
+      matchGenres &&
+      matchBindings &&
+      matchRatings &&
+      matchPrice &&
+      matchSearch
+    );
   });
 
   // console.log(booksData);
@@ -366,10 +414,6 @@ export default function Books() {
   // console.log(filteredBooks);
 
   const sortBy = searchParams.get('sort') || '';
-
-  const calculateSellingPrice = (a) => {
-    return Math.round(a.originalPrice - (a.originalPrice * a.discountPercentage) / 100);
-  }
 
   const applySorting = (sortBy) => {
     if(sortBy === 'price-high-low') {
@@ -466,15 +510,24 @@ export default function Books() {
               </div>
             </div>
           </div>
-          <div className="col-md-10">
-            <div className="row g-3">
-              {sortedBooks.map((book) => 
-                <div key={book._id} className='col-md-3'>
-                  <BookCard book={book} id={book._id} />
-                </div>  
+            <div className="col-md-10">
+              {sortedBooks.length === 0 ? (
+                <div className="text-center py-5">
+                  <h5>No books found</h5>
+                  <p className="text-muted">
+                    Try changing or clearing your filters.
+                  </p>
+                </div>
+              ) : (
+                <div className="row g-3">
+                  {sortedBooks.map((book) => (
+                    <div key={book._id} className="col-md-3">
+                      <BookCard book={book} id={book._id} />
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-          </div>
         </div>
       </div>
     </div>
