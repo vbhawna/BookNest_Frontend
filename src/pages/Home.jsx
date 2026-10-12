@@ -65,21 +65,49 @@ if (!Array.isArray(genreData) || genreData.length === 0) {
   );
 }
 
-function BookSection({ title, filteredBooks, viewMoreUrl }) {
+function BookSection({ title, subtitle, filteredBooks, viewMoreUrl }) {
+  const books = Array.isArray(filteredBooks) ? filteredBooks : [];
+
   return (
-    <div className="container-fluid mt-4">
+    <div className="container-fluid rounded mt-4 mb-5" style={{ backgroundColor: "#fff7cf" }}>
+
       <div className="text-center mb-4">
-        <h2>{title} Books</h2>
-        <p>Enjoy {title} Books!</p>
+        <h2 className='fw-bold pt-3'>{title}</h2>
+        <p className='text-muted'>
+          {subtitle}
+        </p>
       </div>
-      <div className="row g-3">
+
+      {books.length === 0 ? (
+        <p className='text-muted text-center py-4'>
+          No books are available in this section right now.
+        </p>
+      ) : (
+        <div className='row g-2'>
+          {books.slice(0, 6).map((book) => (
+            <div key={book._id} className='col-6 col-md-4 col-lg-2'>
+              <BookCard book={book} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* <div className="row g-3">
         {filteredBooks.slice(0, 6).map((book) => (
           <div key={book._id} className="col-lg-2 col-md-3 col-sm-6 mb-4">
           <BookCard book={book} />
           </div>
         ))}
+      </div> */}
+
+      <div className='text-center mt-3 pb-4'>
+        <Link to={viewMoreUrl} className='btn btn-outline-primary rounded-pill px-4 fw-semibold'>
+          View All
+          <span className="ms-2" aria-hidden="true">→</span>
+        </Link>
       </div>
-      <Link to={viewMoreUrl}>View All</Link>
+      
+
     </div>
   );
 }
@@ -87,21 +115,37 @@ function BookSection({ title, filteredBooks, viewMoreUrl }) {
 function FeaturedBookSection() {
   const { booksData, booksLoading, booksError } = useBookContext();
 
+
   if (booksLoading) {
     return (
-      <p className="text-success fw-bold text-center">
-        Loading Books...
-      </p>
+      <div
+        className="d-flex justify-content-center align-items-center gap-2 py-5"
+        role="status"
+      >
+        <span
+          className="spinner-border spinner-border-sm text-primary"
+          aria-hidden="true"
+        ></span>
+        <span>Loading books...</span>
+      </div>
     );
   }
 
   if (booksError) {
     return (
-        <p className="text-danger fw-bold text-center">
-            Unable to load books.
-        </p>
+      <div className="alert alert-danger text-center mx-3" role="alert">
+        Unable to load books. Please try again later.
+      </div>
     );
-}
+  }
+
+  if (!Array.isArray(booksData) || booksData.length === 0) {
+    return (
+      <p className="text-muted text-center py-5">
+        No books are available right now.
+      </p>
+    );
+  }
 
   // console.log(booksData);
   const topRatedBooks = booksData.filter((book) => book.rating >= 4.0);
@@ -122,18 +166,25 @@ function FeaturedBookSection() {
   return (
     <div>
       <div>
-        <BookSection title="Top Rated" 
-        filteredBooks={topRatedBooks} 
-        viewMoreUrl='/books?rating=4stars_plus' />
+        <BookSection 
+          title="Readers' Favorites"
+          subtitle="Stories and ideas readers love, rated 4 stars and above."
+          filteredBooks={topRatedBooks} 
+          viewMoreUrl='/books?rating=4stars_plus' 
+        />
       </div>
       <div>
-        <BookSection title="New Arrival" 
-        filteredBooks={newArrivalBooks} 
-        viewMoreUrl='/books?sort=newArrival' />
+        <BookSection 
+          title="Fresh on the Shelves"
+          subtitle="Discover your next great read from our latest collection."
+          filteredBooks={newArrivalBooks} 
+          viewMoreUrl='/books?sort=newArrival' 
+        />
       </div>
       <div>
         <BookSection
-          title="Today's Deals"
+          title="Good Reads, Great Prices"
+          subtitle="Find your next favorite book at a price you'll love."
           filteredBooks={mostDiscountedBooks}
           viewMoreUrl='/books?sort=deals' 
         />

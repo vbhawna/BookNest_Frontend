@@ -1,11 +1,28 @@
+import { toast } from "react-toastify";
+
 const WishlistButton = ({ book, addToWishlist, removeFromWishlist, isInWishlist }) => {
+
     const handleWishlistToggle = async () => {
-        if(isInWishlist(book._id)) {
-        await removeFromWishlist(book._id);
+        let result;
+        const alreadyInWishlist = isInWishlist(book._id);
+
+        if (alreadyInWishlist) {
+            result = await removeFromWishlist(book._id);
         } else {
-        await addToWishlist(book);
+            result = await addToWishlist(book);
+        }
+
+        if (result) {
+            if(alreadyInWishlist) {
+                toast.success("Book removed from the wishlist successfully.");
+            } else {
+                toast.success("Book added to the wishlist successfully.")
+            }
+        } else {
+            toast.error("Unable to update your wishlist. Please try again.");
         }
     };
+
 
     return (
         <button
