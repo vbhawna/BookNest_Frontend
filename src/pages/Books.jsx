@@ -408,6 +408,7 @@ const calculateSellingPrice = (book) => {
   });
 
   // console.log(booksData);
+
   // console.log(booksData.length);
   // console.log(booksLoading);
 

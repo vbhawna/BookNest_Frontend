@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetch from "../useFetch";
 import StarRating from '../components/StarRating';
 import { useState } from "react";
@@ -6,12 +6,16 @@ import { useWishlistContext } from "../contexts/WishlistContext";
 import WishlistButton from '../components/WishlistButton';
 import { useCartContext } from "../contexts/CartContext";
 import QuantityChanger from "../components/QuantityChanger";
+import { toast } from "react-toastify";
 
 export default function BookDetails() {
     const [showAll, setShowAll] = useState(false);
 
     const { bookId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isValidBookId = /^[a-fA-F0-9]{24}$/.test(bookId);
 
     const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
 
@@ -21,22 +25,82 @@ export default function BookDetails() {
 
     // console.log(data);
 
+    if (!isValidBookId) {
+        return (
+        <div className="container py-5 text-center">
+            <div className="alert alert-warning" role="alert">
+            <h5 className="alert-heading">Invalid Book ID</h5>
+            <p className="mb-3">
+                The book ID is invalid. Please select a book from our collection.
+            </p>
+            <Link to="/books" className="btn btn-warning">
+                Browse Books
+            </Link>
+            </div>
+        </div>
+        );
+    }
+
     if (loading) {
-        return <p className="text-center mt-5">Loading...</p>;
+        return (
+        <div className="container py-5 text-center" role="status">
+            <div
+            className="spinner-border text-warning mb-3"
+            aria-hidden="true"
+            />
+            <p className="text-muted">Loading book details...</p>
+        </div>
+        );
     }
 
     if (error) {
-        return <p className="text-center text-danger mt-5">Something went wrong while fetching the book.</p>;
+        const isNotFound = error.status === 404;
+
+        return (
+            <div className="container py-5 text-center">
+                <div
+                className={`alert ${isNotFound ? "alert-warning" : "alert-danger"}`}
+                role="alert"
+                >
+                <h5 className="alert-heading">
+                    {isNotFound ? "Book Not Found" : "Unable to Load Book"}
+                </h5>
+
+                <p className="mb-3">
+                    {isNotFound
+                    ? "This book does not exist or is no longer available."
+                    : "We couldn't load this book. Please check your connection and try again."}
+                </p>
+
+                <Link to="/books" className="btn btn-warning">
+                    Browse Books
+                </Link>
+                </div>
+            </div>
+        );
     }
 
-    if (!data) {
-        return <p className="text-center mt-5">Book not found.</p>;
+    if (!data || typeof data !== "object" || Array.isArray(data) || !data._id) {
+        return (
+            <div className="container py-5 text-center">
+                <div className="alert alert-warning" role="alert">
+                <h5 className="alert-heading">Book Not Found</h5>
+                <p className="mb-3">
+                    We couldn't find the requested book.
+                </p>
+                <Link to="/books" className="btn btn-warning">
+                    Browse Books
+                </Link>
+                </div>
+            </div>
+        );
     }
 
     const discountPrice =
     Math.round(data.originalPrice - (data.originalPrice * data.discountPercentage) / 100);
 
-    const bookSummary = showAll ? data.description : data.description.slice(0, 135);
+    const description = data.description ?? "";
+    const bookSummary = showAll ? description : description.slice(0, 135);
 
     const handleBuyNow = async () => {
         const success = await addToCart(data._id);
@@ -47,21 +111,69 @@ export default function BookDetails() {
     };
 
 
-    const item = cart.items.find((item) => item.book._id === data._id);
+    const item = cart?.items?.find((item) => item.book._id === data._id);
 
     // console.log(item);
+
+    const handleBack = () => {
+        if (location.state?.from) {
+            navigate(location.state.from);
+        } else {
+            navigate("/books");
+        }
+    };
+
+    const handleAddToCart = async () => {
+        const result = await addToCart(data._id);
+        
+        if (result) {
+                toast.success("Book added to the cart successfully.");
+        } else {
+            toast.error("Unable to add the book in the cart. Please try again.");
+        }
+    };
 
 
     return (
         <div className="py-4">
                 <div className="container-fluid">
+                    <div className="mb-3">
+                        <button
+                        type="button"
+                        className="btn btn-outline-secondary rounded-pill px-3"
+                        onClick={handleBack}
+                        >
+                        &larr; Back
+                        </button>
+                    </div>
+
                     <div className="row g-4 mb-5">
-                        <div className="col-lg-5 col-md-6">
-                            <div className="bg-white rounded p-4 d-flex justify-content-center align-items-center shadow" style={{ minHieight: '480px' }}>
-                                <img src={data.coverImageUrl} alt={data.title} className="border rounded img-fluid w-auto object-fit-contain shadow" style={{ maxHeight: '480px' }}/>
-                            </div>
+                        
+                    <div className="col-12 col-lg-5">
+                        <div
+                            className="bg-white rounded p-3 p-md-4 d-flex justify-content-center align-items-center shadow"
+                            style={{ minHeight: "300px", height: "clamp(300px, 55vw, 480px)" }}
+                        >
+                            <img
+                            src={data.coverImageUrl || "/images/book-placeholder.png"}
+                            alt={data.title}
+                            className="img-fluid border rounded shadow"
+                            style={{
+                                maxHeight: "100%",
+                                maxWidth: "100%",
+                                width: "auto",
+                                objectFit: "contain",
+                            }}
+                            loading="lazy"
+                            onError={(event) => {
+                                event.currentTarget.onerror = null;
+                                event.currentTarget.src = "/images/book-placeholder.png";
+                            }}
+                            />
                         </div>
-                        <div className="col-lg-7 col-md-6">
+                    </div>
+
+                        <div className="col-12 col-lg-7">
                             <div className="bg-white rounded p-4 h-100 shadow">
 
                                 <div className="d-flex justify-content-between align-items-center gap-3">
@@ -77,21 +189,39 @@ export default function BookDetails() {
                                 </div>
 
                                 <div className="mb-3 d-flex flex-wrap gap-2">
-                                    {data.genres.map(g => (
-                                        <span key={g} className="badge bg-body-secondary text-dark small fw-medium py-2 px-2 rounded-pill">{g}{' '}</span>
+                                    {(data.genres ?? []).map((genre) => (
+                                        <span key={genre} className="badge bg-body-secondary text-dark small fw-medium py-2 px-2 rounded-pill">{genre}{' '}</span>
                                     ))}
                                 </div>
 
+                                
                                 <div className="mb-1 d-flex flex-wrap align-items-center gap-3">
-                                    <span className="text-decoration-line-through text-muted">MRP: ₹{data.originalPrice}</span>
-                                    <span className="fw-bold fs-6">₹{discountPrice}</span>
-                                    <span className="bg-success text-white py-1 px-2 rounded-2 small fw-semibold">{data.discountPercentage}% Off</span>
+                                    {data.discountPercentage > 0 && (
+                                        <span className="text-decoration-line-through text-muted">
+                                        MRP: ₹{data.originalPrice}
+                                        </span>
+                                    )}
+
+                                    <span className="fw-bold fs-5">
+                                        ₹{discountPrice}
+                                    </span>
+
+                                    {data.discountPercentage > 0 && (
+                                        <span className="bg-success text-white py-1 px-2 rounded-2 small fw-semibold">
+                                        {data.discountPercentage}% Off
+                                        </span>
+                                    )}
                                 </div>
+
 
                                 <small className="text-muted">(Incl. of all taxes)</small>
 
                                 <div className="mt-3 mb-4">
-                                    {data.stockQuantity > 0 ? <p className="fw-semibold fs-6 text-success">● In Stock</p> : <p className="fw-semibold fs-6 text-danger">● Out of Stock</p>}
+                                    {
+                                        data.stockQuantity > 0 
+                                            ? <p className="fw-semibold fs-6 text-success">● In Stock</p> 
+                                            : <p className="fw-semibold fs-6 text-danger">● Out of Stock</p>
+                                    }
                                 </div>
 
                                 {isInCart(data._id) && (
@@ -114,7 +244,7 @@ export default function BookDetails() {
                                                     type='button' 
                                                     className="btn btn-outline-warning py-3 px-4 fw-semibold rounded-2" 
                                                     style={{ minWidth: "230px"}}
-                                                    onClick={() => addToCart(data._id)}
+                                                    onClick={handleAddToCart}
                                                 >
                                                     Add to Cart
                                                 </button>
@@ -160,10 +290,10 @@ export default function BookDetails() {
                                     <div className="card-body p-3">
                                         <p className="text-body-secondary mb-2">
                                             {bookSummary}
-                                            {!showAll && data.description.length > 135 ? "..." : ""}
+                                            {!showAll && description.length > 135 ? "..." : ""}
                                         </p>
 
-                                        {data.description.length > 135 && (
+                                        {description.length > 135 && (
                                             <div className="text-center">
                                                 <button type='button' className="btn btn-link p-0 text-decoration-none text-dark fw-semibold" onClick={() => setShowAll(!showAll)}>
                                                     {showAll ? "View Less" : "View More"}

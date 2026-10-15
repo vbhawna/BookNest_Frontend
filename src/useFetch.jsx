@@ -6,21 +6,53 @@ const useFetch = (url) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function fetchData() {
       try {
         setLoading(true);
-        const response = await fetch(url);
-        const result = await response.json();
+        setError(null);
+        setData(null);
+
+        const response = await fetch(url, {
+          signal: controller.signal,
+        });
+
+        let result = null;
+
+        try {
+          result = await response.json();
+        } catch (jsonError) {
+          throw new Error("Failed to parse JSON response");
+        }
+
+        if (!response.ok) {
+          const requestError = new Error(
+            result?.message ||
+              (response.status === 404
+                ? "Book not found."
+                : "Unable to fetch data. Please try again.")
+          );
+
+          requestError.status = response.status;
+          throw requestError;
+        }
 
         setData(result);
-      } catch (error) {
-        setError(error);
+      } catch (err) {
+        if (err.name === "AbortError") return;
+
+        setError(err);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchData();
+
+    return () => controller.abort();
   }, [url]);
 
   return { data, loading, error };
