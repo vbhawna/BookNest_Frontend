@@ -205,3 +205,29 @@ code {
 .price-slider input::-webkit-slider-thumb {
   pointer-events: auto;
 }
+
+/* Default star size on desktop */
+.star-rating {
+  font-size: 1rem;
+  gap: 1px;
+}
+
+/* Smaller stars on mobile */
+@media (max-width: 576px) {
+  .star-rating {
+    font-size: 0.7rem;
+    gap: 0;
+  }
+
+  .book-card .card-footer {
+    gap: 0.25rem !important;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+  }
+
+  .book-card .card-footer > .btn {
+    padding-left: 0.35rem !important;
+    padding-right: 0.35rem !important;
+    font-size: 0.7rem;
+  }
+}

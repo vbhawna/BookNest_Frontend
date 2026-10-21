@@ -257,7 +257,14 @@ export default function BookDetails() {
                                                 </button>
                                             </>
                                             ))
-                                     : <button type='button' className="btn btn-outline-secondary py-3 px-4 fw-semibold rounded-2" style={{ minWidth: "230px"}}>Notify Me</button>}
+                                     : <button 
+                                            type='button' 
+                                            className="btn btn-outline-secondary py-3 px-4 fw-semibold rounded-2" 
+                                            style={{ minWidth: "230px"}}
+                                            onClick={() => toast.info("This book is currently out of stock.")}
+                                        >
+                                            Notify Me
+                                        </button>}
                                     
                                 </div>
 

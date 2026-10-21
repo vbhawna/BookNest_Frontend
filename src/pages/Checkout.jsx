@@ -2,6 +2,7 @@ import { useState } from "react";
 import useFetch from "../useFetch";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartContext } from "../contexts/CartContext";
+import { toast } from "react-toastify";
 import {
   calculateDeliveryCharge,
   calculateItemPrice,
@@ -114,7 +115,7 @@ export default function Checkout() {
   const handlePlaceOrder = async () => {
     try {
       if (!selectedAddressId) {
-        window.alert("Please select a delivery address.");
+        toast.warning("Please select a delivery address.");
         return;
       }
 

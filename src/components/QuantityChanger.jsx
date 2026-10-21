@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { useCartContext } from "../contexts/CartContext";
 
-export default function QuantityChanger({ item }) {
+export default function QuantityChanger({ item, compact = false }) {
   const { updatedCartQuantity } = useCartContext();
   const [updating, setUpdating] = useState(false);
 
@@ -48,10 +48,14 @@ export default function QuantityChanger({ item }) {
   };
 
   return (
-    <div className="btn-group" role="group" aria-label="Book quantity">
+    <div 
+      className={`btn-group ${compact ? "btn-group-sm" : ""}`} 
+      role="group" 
+      aria-label="Book quantity"
+    >
       <button
         type="button"
-        className="btn btn-outline-secondary"
+        className={`btn btn-outline-secondary ${compact ? "btn-sm" : ""}`}
         disabled={updating || item.quantity <= 1}
         onClick={() => handleQuantityChange("decrease")}
         aria-label="Decrease quantity"
@@ -64,7 +68,9 @@ export default function QuantityChanger({ item }) {
       </button>
 
       <span
-        className="btn btn-outline-secondary bg-white text-dark"
+        className={`btn btn-outline-secondary bg-white text-dark ${
+          compact ? "btn-sm" : ""
+        }`}
         aria-live="polite"
       >
         {item.quantity}
@@ -72,7 +78,7 @@ export default function QuantityChanger({ item }) {
 
       <button
         type="button"
-        className="btn btn-outline-secondary"
+        className={`btn btn-outline-secondary ${compact ? "btn-sm" : ""}`}
         disabled={
           updating || item.quantity >= item.book.stockQuantity
         }
