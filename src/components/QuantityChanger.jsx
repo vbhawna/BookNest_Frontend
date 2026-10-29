@@ -19,7 +19,7 @@ export default function QuantityChanger({ item, compact = false }) {
       operation === "increase" &&
       item.quantity >= item.book.stockQuantity
     ) {
-      toast.info("You cannot add more than the available stock.");
+      toast.info("You cannot add more than the available stock."); 
       return;
     }
 

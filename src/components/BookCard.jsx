@@ -4,12 +4,13 @@ import { useWishlistContext } from '../contexts/WishlistContext';
 import WishlistButton from './WishlistButton';
 import { useCartContext } from '../contexts/CartContext';
 import { toast } from 'react-toastify';
-import QuantityChanger from './QuantityChanger';
+import { useState } from 'react';
 
 
 export default function BookCard({ book }) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistContext();
-  const { cart, isInCart, addToCart } = useCartContext();  
+  const { cart, isInCart, addToCart, updatedCartQuantity } = useCartContext();  
+  const [updating, setUpdating] = useState(false);
 
   const location = useLocation();
 
@@ -21,12 +22,43 @@ export default function BookCard({ book }) {
     Math.round(book.originalPrice - (book.originalPrice * book.discountPercentage) / 100);
 
   const handleAddToCart = async () => {
-    const result = await addToCart(book._id);
+    if(updating) return;
+
+    setUpdating(true);
+
+    try {
+      const result = await addToCart(book._id);
     
-    if (result) {
-            toast.success("Book added to the cart successfully.");
-    } else {
-        toast.error("Unable to add the book in the cart. Please try again.");
+      if (result) {
+              toast.success("Book added to the cart successfully.");
+      } else {
+          toast.error("Unable to add the book in the cart. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error adding book to cart: ", error);
+      toast.error("Something went wrong while adding the book to the cart.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAddBtnOnWishlist = async () => {
+    if(updating) return;
+
+    setUpdating(true);
+    try {
+      const result = await updatedCartQuantity(book._id, "increase");
+
+      if (result) {
+        toast.success("Book Quantity increased in the cart successfully.");
+      } else {
+        toast.error("Unable to update the book quantity in the cart. Please try again.");
+      }
+    }catch (error) {
+      console.error("Error updating cart quantity: ", error);
+      toast.error("Something went wrong while updating the cart.");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -43,8 +75,28 @@ export default function BookCard({ book }) {
       );
     }
 
-    if(isWishlistPage && cartItem) {
-      return <QuantityChanger item={cartItem} compact />
+    if (isWishlistPage) {
+      const handleWishlistAdd = cartItem
+        ? handleAddBtnOnWishlist
+        : handleAddToCart;
+
+      return (
+        <button
+          type="button"
+          className="btn btn-warning btn-sm rounded-pill fw-semibold px-2 flex-shrink-0"
+          disabled={updating}
+          onClick={handleWishlistAdd}
+        >
+          {updating ? (
+            <span
+              className="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            />
+          ) : (
+            "Add to Cart"
+          )}
+        </button>
+      );
     }
 
     if(isInCart(book._id)) {
@@ -58,10 +110,16 @@ export default function BookCard({ book }) {
 
     return (
       <button
+        type="button"
         className="btn btn-warning btn-sm rounded-pill fw-semibold px-2 flex-shrink-0"
+        disabled={updating}
         onClick={handleAddToCart}
       >
-        Add to Cart
+        {updating ? (
+          <span className="spinner-border spinner-border-sm" aria-hidden="true" />
+        ) : (
+          "Add to Cart"
+        )}
       </button>
     );
 

@@ -59,7 +59,7 @@ export default function Navbar() {
       className="navbar navbar-expand-lg py-2 shadow-sm" 
       style={{ backgroundColor: "#f8e6b0" }}
     >
-      <div className="container-fluid px-3 px-lg-4 flex-nowrap">
+      <div className="container-fluid px-3 px-lg-4">
 
         <NavLink 
           to="/" 
@@ -86,7 +86,7 @@ export default function Navbar() {
         </button>
 
         <div id="navbarSupportedContent" className="collapse navbar-collapse">
-          <ul className="navbar-nav flex-row align-items-center gap-2 me-3 mb-0">
+          <ul className="navbar-nav flex-row align-items-center gap-3 me-lg-3 mb-2 mb-lg-0">
             <li className="nav-item">
               <NavLink to="/" className={navLinkClass}>
                 Home
@@ -117,7 +117,7 @@ export default function Navbar() {
             />
           </div>
 
-          <ul className="navbar-nav flex-row align-items-center gap-2 ms-lg-auto mb-0">
+          <ul className="navbar-nav flex-row align-items-center gap-3 ms-lg-auto mb-0">
             <li className="nav-item">
               <NavLink to="/profile" className={navLinkClass} aria-label="Profile">
                 <span className="fs-5">👤</span>
